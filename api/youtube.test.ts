@@ -23,10 +23,9 @@ function createAuthContext(): { ctx: TrpcContext } {
       protocol: "https",
       headers: {},
     } as TrpcContext["req"],
-    // @ts-ignore
     res: {
       clearCookie: () => {},
-    } as TrpcContext["res"],
+    } as unknown as TrpcContext["res"],
   };
 
   return { ctx };
