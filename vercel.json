@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm install && pnpm db:push && pnpm build",
+  "buildCommand": "npm install && pnpm build",
   "outputDirectory": "dist",
   "devCommand": "pnpm dev",
   "env": {
