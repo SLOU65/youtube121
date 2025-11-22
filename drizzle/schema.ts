@@ -21,7 +21,7 @@ export const users = pgTable("users", {
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: userRoleEnum("role").default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().$onUpdateFn(() => new Date()).notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
@@ -44,7 +44,7 @@ export const youtubeApiKeys = pgTable("youtube_api_keys", {
   /** Last time the API key was validated */
   lastValidated: timestamp("lastValidated"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().$onUpdateFn(() => new Date()).notNull(),
 });
 
 export type YoutubeApiKey = typeof youtubeApiKeys.$inferSelect;
@@ -60,7 +60,7 @@ export const userPreferences = pgTable("user_preferences", {
   /** Language preference: 'ru' or 'en' */
   language: languageEnum("language").default("en").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().$onUpdateFn(() => new Date()).notNull(),
 });
 
 export type UserPreference = typeof userPreferences.$inferSelect;

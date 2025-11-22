@@ -1,5 +1,5 @@
 import { createHash, createHmac } from 'crypto';
-import { User } from '../drizzle/schema';
+import { User, InsertUser } from '../drizzle/schema'; // <-- ИСПРАВЛЕНО: Добавлен импорт InsertUser
 import * as db from './db';
 import { ENV } from './_core/env';
 
@@ -8,7 +8,7 @@ import { ENV } from './_core/env';
  * @param initData The data string received from Telegram.
  * @returns A map of the validated data.
  */
-function validateInitData(initData: string): Map<string, string> {
+function validateInitData(initData: string): URLSearchParams { // <-- ИСПРАВЛЕНО: Изменен возвращаемый тип
   const params = new URLSearchParams(initData);
   const hash = params.get('hash');
   params.delete('hash');
@@ -56,7 +56,7 @@ export async function authenticateTelegramUser(initData: string): Promise<User> 
 
   // 2. If user does not exist, create a new one
   if (!user) {
-    const newUser: db.InsertUser = {
+    const newUser: InsertUser = { // <-- ИСПРАВЛЕНО: Используется импортированный InsertUser
       openId: telegramId,
       name: userJson.first_name + (userJson.last_name ? ' ' + userJson.last_name : ''),
       email: null, // Telegram does not provide email
