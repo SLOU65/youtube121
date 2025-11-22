@@ -12,8 +12,10 @@
     "test": "vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit push:pg"
   },
+  
   "engines": {
-    "node": "20.x"
+    "node": "20.x || 24.x"
+
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
