@@ -25,7 +25,7 @@ function createAuthContext(): { ctx: TrpcContext } {
     } as TrpcContext["req"],
     res: {
       clearCookie: () => {},
-    } as TrpcContext["res"],
+    } as unknown as TrpcContext["res"], // <-- ИСПРАВЛЕНО
   };
 
   return { ctx };
