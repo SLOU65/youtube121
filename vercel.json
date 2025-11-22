@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm install && pnpm build",
+  "buildCommand": "npm install --frozen-lockfile && npm run build",
   "outputDirectory": "dist",
   "devCommand": "pnpm dev",
   "env": {
