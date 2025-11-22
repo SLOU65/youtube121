@@ -1,11 +1,11 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useTelegram } from "@/hooks/useTelegram";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { getLoginUrl } from "@/const";
+
 import { useTranslation } from "@/hooks/useTranslation";
 import { trpc } from "@/lib/trpc";
 import { AlertCircle, CheckCircle2, Key, Loader2, Search, Video, List, MessageSquare, UserPlus, ChevronDown, ExternalLink } from "lucide-react";
@@ -94,7 +94,7 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full" size="lg">
-              <a href={getLoginUrl()}>Sign In to Continue</a>
+              <a href="/api/auth/login">Sign In to Continue</a>
             </Button>
           </CardContent>
         </Card>
@@ -286,7 +286,6 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
-
 
 
             <Link href="/channels">
