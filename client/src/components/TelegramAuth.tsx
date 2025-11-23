@@ -60,41 +60,6 @@ export default function TelegramAuth() {
   };
 
 
-
-  // Если пользователь не авторизован через Telegram, просто показываем форму ввода ключа
-  if (!telegramUser && !apiKeyConnected) {
-    // Если пользователь не авторизован через Telegram, но ключ уже есть в localStorage, 
-    // то мы можем сразу показать интерфейс.
-    // Если ключа нет, то показываем форму.
-  }
-
-  // В этом компоненте мы больше не зависим от telegramUser для отображения формы ключа.
-  // Мы просто показываем форму, если ключа нет.
-
-  // Если пользователь не авторизован через Telegram, но ключ уже есть в localStorage, 
-  // то мы можем сразу показать интерфейс.
-  if (!telegramUser && !apiKeyConnected) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            </div>
-            <CardTitle>{t('loading')}</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
-  // Если ключ есть, то показываем интерфейс.
-  // Если ключа нет, то показываем форму.
-  // Если пользователь авторизован через Telegram, то показываем его имя.
-  
-  // Удаляем старую логику загрузки, так как она не нужна.
-  
-
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
