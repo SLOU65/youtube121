@@ -108,15 +108,23 @@ class SDKServer {
 
     if (initData) {
       try {
+        // ... (строки 111-114 остаются без изменений)
         const user = await authenticateTelegramUser(initData);
         // Create a session token for the user and set it as a cookie
-        const sessionToken = await this.createSessionToken(user.openId, { name: user.name || "User" });
+       const sessionToken = await this.createSessionToken(user.openId, { name: user.name || "User" });;
+        
+        // --- ИСПРАВЛЕНИЕ ДЛЯ КУКИ ---
+        // Устанавливаем SameSite=None и Secure=true для работы в iframe Telegram
+        // Добавляем domain: ".tgyoubotsup.fun" для работы в поддомене Render
         req.res.cookie(COOKIE_NAME, sessionToken, {
           maxAge: ONE_YEAR_MS,
           httpOnly: true,
-          secure: ENV.isProduction,
-          sameSite: "lax",
-        });
+          secure: true, // Должно быть true для SameSite=None
+          sameSite: "none", // Критично для кросс-доменной установки куки в iframe
+          domain: ENV.isProduction ? ".tgyoubotsup.fun" : undefined, // Помогает браузеру понять, куда привязать куки
+        } );
+        // --- КОНЕЦ ИСПРАВЛЕНИЯ ---
+
         return user;
       } catch (error) {
         console.error("[Auth] Telegram initData validation failed:", error);
