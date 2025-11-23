@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development tsx watch api/_core/index.ts",
     "build": "vite build && esbuild api/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
-    "start": "NODE_ENV=production tsx api/_core/index.ts",
+    "start": "NODE_ENV=production node server.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
