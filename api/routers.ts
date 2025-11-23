@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { YouTubeAPI } from "./youtube";
@@ -21,14 +21,10 @@ export const appRouter = router({
 
   // YouTube API Key Management
   youtube: router({
-    // Check if user has an active API key
-    hasApiKey: protectedProcedure.query(async ({ ctx }) => {
-      const hasKey = await db.hasActiveYoutubeApiKey(ctx.user.id);
-      return { hasKey };
-    }),
+    
 
     // Save/Update YouTube API key
-    saveApiKey: protectedProcedure
+    saveApiKey: publicProcedure
       .input(z.object({ apiKey: z.string().min(1) }))
       .mutation(async ({ ctx, input }) => {
         // Validate the API key first
@@ -39,18 +35,14 @@ export const appRouter = router({
           throw new Error('Invalid YouTube API key');
         }
 
-        await db.saveYoutubeApiKey(ctx.user.id, input.apiKey);
+        // Ключ будет храниться на клиенте, поэтому логика сохранения в БД удалена.
         return { success: true };
       }),
 
-    // Delete YouTube API key
-    deleteApiKey: protectedProcedure.mutation(async ({ ctx }) => {
-      await db.deleteYoutubeApiKey(ctx.user.id);
-      return { success: true };
-    }),
+    
 
     // Search
-    search: protectedProcedure
+    search: publicProcedure
       .input(z.object({
         q: z.string().optional(),
         type: z.enum(['video', 'channel', 'playlist']).optional(),
@@ -72,7 +64,7 @@ export const appRouter = router({
         pageToken: z.string().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -82,10 +74,10 @@ export const appRouter = router({
       }),
 
     // Videos
-    getVideo: protectedProcedure
+    getVideo: publicProcedure
       .input(z.object({ videoId: z.string() }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -94,10 +86,10 @@ export const appRouter = router({
         return youtube.getVideo(input.videoId);
       }),
 
-    getVideos: protectedProcedure
+    getVideos: publicProcedure
       .input(z.object({ videoIds: z.array(z.string()) }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -106,13 +98,13 @@ export const appRouter = router({
         return youtube.getVideos(input.videoIds);
       }),
 
-    getMostPopular: protectedProcedure
+    getMostPopular: publicProcedure
       .input(z.object({
         regionCode: z.string().optional(),
         maxResults: z.number().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -122,10 +114,10 @@ export const appRouter = router({
       }),
 
     // Channels
-    getChannel: protectedProcedure
+    getChannel: publicProcedure
       .input(z.object({ channelId: z.string() }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -134,10 +126,10 @@ export const appRouter = router({
         return youtube.getChannel(input.channelId);
       }),
 
-    getChannelByUsername: protectedProcedure
+    getChannelByUsername: publicProcedure
       .input(z.object({ username: z.string() }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -146,14 +138,14 @@ export const appRouter = router({
         return youtube.getChannelsByUsername(input.username);
       }),
 
-    getChannelVideos: protectedProcedure
+    getChannelVideos: publicProcedure
       .input(z.object({ 
         channelId: z.string(),
         maxResults: z.number().optional(),
         pageToken: z.string().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -167,10 +159,10 @@ export const appRouter = router({
       }),
 
     // Playlists
-    getPlaylist: protectedProcedure
+    getPlaylist: publicProcedure
       .input(z.object({ playlistId: z.string() }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -179,14 +171,14 @@ export const appRouter = router({
         return youtube.getPlaylist(input.playlistId);
       }),
 
-    getPlaylistItems: protectedProcedure
+    getPlaylistItems: publicProcedure
       .input(z.object({
         playlistId: z.string(),
         maxResults: z.number().optional(),
         pageToken: z.string().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -196,14 +188,14 @@ export const appRouter = router({
       }),
 
     // Comments
-    getVideoComments: protectedProcedure
+    getVideoComments: publicProcedure
       .input(z.object({
         videoId: z.string(),
         maxResults: z.number().optional(),
         pageToken: z.string().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -212,14 +204,14 @@ export const appRouter = router({
         return youtube.getVideoComments(input.videoId, input.maxResults, input.pageToken);
       }),
 
-    getCommentReplies: protectedProcedure
+    getCommentReplies: publicProcedure
       .input(z.object({
         parentId: z.string(),
         maxResults: z.number().optional(),
         pageToken: z.string().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -229,14 +221,14 @@ export const appRouter = router({
       }),
 
     // Subscriptions
-    getSubscriptions: protectedProcedure
+    getSubscriptions: publicProcedure
       .input(z.object({
         channelId: z.string(),
         maxResults: z.number().optional(),
         pageToken: z.string().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        const apiKey = await db.getActiveYoutubeApiKey(ctx.user.id);
+        const apiKey = ctx.req.headers['x-youtube-api-key'] as string | undefined;
         if (!apiKey) {
           throw new Error('No active YouTube API key found');
         }
@@ -246,20 +238,7 @@ export const appRouter = router({
       }),
   }),
 
-  // User preferences
-  preferences: router({
-    get: protectedProcedure.query(async ({ ctx }) => {
-      const prefs = await db.getUserPreference(ctx.user.id);
-      return prefs || { language: 'en' as const };
-    }),
 
-    setLanguage: protectedProcedure
-      .input(z.object({ language: z.enum(['ru', 'en']) }))
-      .mutation(async ({ ctx, input }) => {
-        await db.setUserLanguage(ctx.user.id, input.language);
-        return { success: true };
-      }),
-  }),
 });
 
 export type AppRouter = typeof appRouter;

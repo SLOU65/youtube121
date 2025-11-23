@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTelegram } from "@/hooks/useTelegram";
+import { useEffect } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { trpc } from "@/lib/trpc";
 import { AlertCircle, CheckCircle2, Key, Loader2, Send } from "lucide-react";
@@ -15,17 +16,22 @@ export default function TelegramAuth() {
   const [apiKey, setApiKey] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: apiKeyStatus, refetch: refetchApiKeyStatus } = trpc.youtube.hasApiKey.useQuery(
-    undefined,
-    { enabled: !!telegramUser }
-  );
+    const [localApiKey, setLocalApiKey] = useState<string | null>(null);
 
-  const saveApiKeyMutation = trpc.youtube.saveApiKey.useMutation({
+  useEffect(() => {
+    const key = localStorage.getItem("youtube-api-key");
+    setLocalApiKey(key);
+  }, []);
+
+  const apiKeyConnected = !!localApiKey;
+
+    const saveApiKeyMutation = trpc.youtube.saveApiKey.useMutation({
     onSuccess: () => {
       hapticFeedback('light');
       toast.success(t('apiKeyValid'));
+      localStorage.setItem("youtube-api-key", apiKey.trim());
+      setLocalApiKey(apiKey.trim());
       setApiKey("");
-      refetchApiKeyStatus();
       setIsSubmitting(false);
     },
     onError: (error) => {
@@ -35,17 +41,13 @@ export default function TelegramAuth() {
     },
   });
 
-  const deleteApiKeyMutation = trpc.youtube.deleteApiKey.useMutation({
-    onSuccess: () => {
-      hapticFeedback('light');
+    const handleDeleteApiKey = () => {
+    if (confirm(t('deleteApiKey') + '?')) {
+      localStorage.removeItem("youtube-api-key");
+      setLocalApiKey(null);
       toast.success(t('success'));
-      refetchApiKeyStatus();
-    },
-    onError: (error) => {
-      hapticFeedback('heavy');
-      toast.error(error.message);
-    },
-  });
+    }
+  };
 
   const handleSaveApiKey = async () => {
     if (!apiKey.trim()) {
@@ -57,13 +59,21 @@ export default function TelegramAuth() {
     saveApiKeyMutation.mutate({ apiKey: apiKey.trim() });
   };
 
-  const handleDeleteApiKey = () => {
-    if (confirm(t('deleteApiKey') + '?')) {
-      deleteApiKeyMutation.mutate();
-    }
-  };
 
-  if (!telegramUser) {
+
+  // Если пользователь не авторизован через Telegram, просто показываем форму ввода ключа
+  if (!telegramUser && !apiKeyConnected) {
+    // Если пользователь не авторизован через Telegram, но ключ уже есть в localStorage, 
+    // то мы можем сразу показать интерфейс.
+    // Если ключа нет, то показываем форму.
+  }
+
+  // В этом компоненте мы больше не зависим от telegramUser для отображения формы ключа.
+  // Мы просто показываем форму, если ключа нет.
+
+  // Если пользователь не авторизован через Telegram, но ключ уже есть в localStorage, 
+  // то мы можем сразу показать интерфейс.
+  if (!telegramUser && !apiKeyConnected) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
@@ -78,6 +88,13 @@ export default function TelegramAuth() {
     );
   }
 
+  // Если ключ есть, то показываем интерфейс.
+  // Если ключа нет, то показываем форму.
+  // Если пользователь авторизован через Telegram, то показываем его имя.
+  
+  // Удаляем старую логику загрузки, так как она не нужна.
+  
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -87,7 +104,7 @@ export default function TelegramAuth() {
             <div>
               <h1 className="text-lg font-bold text-foreground">YouTube Manager</h1>
               <p className="text-xs text-muted-foreground">
-                {telegramUser.first_name} {telegramUser.last_name || ''}
+                {apiKeyConnected ? 'API Key Connected' : 'Enter API Key'}
               </p>
             </div>
           </div>
@@ -109,7 +126,7 @@ export default function TelegramAuth() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {apiKeyStatus?.hasKey ? (
+            {apiKeyConnected ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm text-green-500">
                   <CheckCircle2 className="w-5 h-5" />
@@ -118,7 +135,7 @@ export default function TelegramAuth() {
                 <div className="flex flex-col gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => refetchApiKeyStatus()}
+                    onClick={() => toast.info(t('apiKeyConnected'))}
                     className="w-full"
                   >
                     {t('reconnectApiKey')}
@@ -126,14 +143,9 @@ export default function TelegramAuth() {
                   <Button
                     variant="destructive"
                     onClick={handleDeleteApiKey}
-                    disabled={deleteApiKeyMutation.isPending}
                     className="w-full"
                   >
-                    {deleteApiKeyMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      t('deleteApiKey')
-                    )}
+                    {t('deleteApiKey')}
                   </Button>
                 </div>
               </div>
@@ -192,7 +204,7 @@ export default function TelegramAuth() {
         </Card>
 
         {/* Features Grid */}
-        {apiKeyStatus?.hasKey && (
+        {apiKeyConnected && (
           <div className="grid grid-cols-1 gap-3">
             <Card className="hover:border-primary/50 transition-colors cursor-pointer">
               <CardContent className="pt-6">
