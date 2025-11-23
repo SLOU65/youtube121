@@ -30,9 +30,8 @@ export default function TelegramAuth() {
       hapticFeedback('light');
       toast.success(t('apiKeyValid'));
       localStorage.setItem("youtube-api-key", apiKey.trim());
-      setLocalApiKey(apiKey.trim());
-      setApiKey("");
-      setIsSubmitting(false);
+      // Принудительная перезагрузка страницы для обновления состояния tRPC и UI
+      window.location.reload();
     },
     onError: (error) => {
       hapticFeedback('heavy');
