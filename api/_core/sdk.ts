@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import type { User } from "../../drizzle/schema";
+type User = any;
 
 class SDKServer {
   constructor() {}
